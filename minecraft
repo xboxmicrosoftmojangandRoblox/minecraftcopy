@@ -1,0 +1,238 @@
+var __lastSky;
+var _ArmFrame;
+var _BACKGROUND;
+var _BiomeID;
+var _Chars;
+var _CHUNK_SEED;
+var _ClearHarvestIdx;
+var _Creative;
+var _Cursor;
+var _DamageArmor;
+var _DEBUG;
+var _DefenseMul;
+var _DMUL;
+var _DragSrcID;
+var _Eating;
+var _FAST;
+var _fcount;
+var _FoodMul;
+var _FoodSaturation;
+var _ForceDelay;
+var _GEN_VERSION;
+var _GLight;
+var _Health_s;
+var _HeldC;
+var _HeldInvID;
+var _Hunger;
+var _InsideIdx;
+var _KeyDelayTrick;
+var _KnockBack;
+var _LastDir;
+var _LIGHTING;
+var _Lighting;
+var _LightProb;
+var _Locked;
+var _lsx;
+var _lsxNeg;
+var _lsy;
+var _Max_Reach;
+var _MaxHarvest;
+var _MaxMobs;
+var _MaxMobsBad;
+var _MDMUL;
+var _Mob100;
+var _MobMul;
+var _Mode;
+var _NextSellID;
+var _NextSpawn;
+var _RandIdx;
+var _RandomSeed;
+var _REFSIZE;
+var _respawnIdx;
+var _respawnSeed;
+var _ScrX;
+var _ScrY;
+var _Skin;
+var _Sound;
+var _SpawnArea;
+var _Speak;
+var _SpriteCount;
+var _SteveLight;
+var _ticks;
+var _tickTime;
+var _Time;
+var _TimeReal;
+var _ToolTipID;
+var _UnderCursor;
+var _WalkFrame;
+var _x;
+var _XRAY;
+var _y;
+var FPS;
+var KeyDelay;
+var MobCount;
+var throttle;
+
+var _BLOCK_DATA = [];
+var _Explode = [];
+var _FOOD_DATA = [];
+var _Gamma = [];
+var _Grow = [];
+var _GrowTime = [];
+var _GUI_pos = [];
+var _Harvest = [];
+var _Inside = [];
+var _Inv = [];
+var _InvPos = [];
+var _LCopy = [];
+var _Level = [];
+var _LevelRef = [];
+var _Light = [];
+var _LightMod = [];
+var _Menu = [];
+var _Mob = [];
+var _MOB_DATA = [];
+var _MobSpawn = [];
+var _RANDOM = [];
+var _Recipes = [];
+var _RefData = [];
+var _RefPool = [];
+var DEBUG = [];
+
+var greenFlag = false;
+var returnMsg = "";
+
+function broadcast(msg) {
+  returnMsg = msg;
+}
+
+function Blank() {}
+
+function Generator() {
+  var biomeType;
+  var BMUL;
+  var debug;
+  var dir_g;
+  var dy;
+  var g_IsFlat;
+  var g_tyy;
+  var g_worldSize;
+  var i;
+  var i_g;
+  var i_s;
+  var i_z3;
+  var LastY;
+  var refIdx_g;
+  var refIdx_pr;
+  var sand;
+  var seed;
+  var ss_g;
+  var t;
+  var t2;
+  var t2_g;
+  var total_g;
+  var track;
+  var vmul;
+  var voff;
+  var waterTileID;
+  var x;
+  var x_g;
+  var xx_g;
+  var y;
+  var y_g;
+  var yy_g;
+  
+  var _Light2 = [];
+  var _NextHarvest = [];
+  var _SAVE_LIST = [];
+  var altitude = [];
+  var BIOME_DATA = [];
+  var Caverns = [];
+  var Rand = [];
+  var RNDStack = [];
+  var tree = [];
+   
+  function ClearLists() {
+    delete _Level[_Level.length];
+    delete _LevelRef[_LevelRef.length];
+    delete _RefData[_RefData.length];
+    delete _RefPool[_RefPool.length];
+    delete tree[tree.length];
+    delete _Grow[_Grow.length];
+    delete _GrowTime[_GrowTime.length];
+    delete _Light[_Light.length];
+    delete _LightMod[_LightMod.length];
+    delete _Harvest[_Harvest.length];
+    delete _NextHarvest[_NextHarvest.length];
+    delete Caverns[Caverns.length];
+  }
+  
+  function ChangeBackground(background) {
+    _BACKGROUND = background;
+    broadcast("change background");
+  }
+  
+  if(greenFlag == true) {
+    ClearLists()
+    delete _Inside[_Inside.length];
+    delete _Mob[_Mob.length];
+    delete _Inv[_Inv.length];
+    delete _LCopy[_LCopy.length];
+    debug = 0;
+  }
+  
+  function PushRandomStack(offset) {
+    RNDStack.push(_RandIdx);
+    _RandIdx += offset;
+  }
+  
+  function PopRandomStack() {
+    _RandIdx = RNDStack.pop();
+    delete RNDStack[RNDStack.pop()];
+  }
+  
+  function randm(from, to, append) {
+    if(!append) {
+      delete Rand[Rand.length]
+    }
+    if(_RandIdx > _RANDOM.length) {
+      _RandIdx = 1 + ((RandIdx - 1) % _RANDOM.length);
+    }
+    if(round(to) == to && round(from) == from) {
+      Rand.push(floor((abs(_RANDOM[_RandIdx]) - 1) * ((to + from) - 1) / 2147483645) + from);
+    } else {
+      Rand.push(((abs(_RANDOM[_RandIdx]) - 1) * ((to + from) - 1) / 2147483644) + from);
+    }
+    _RandIdx ++;
+  }
+  
+  function FillHorizontalLine(typ, x, y, x2, onlyInID) {
+    i_g = x + (y * _lsx);
+    while((x2 - x) + 1) {
+      i_g ++;
+      if(!(typ == _Level[i_g])) {
+        if(onlyInID == 0 || onlyInID == _Level[i_g]) {
+          _Level[i_g] = typ;
+          total_g --;
+        }
+      }
+    }
+  }
+  
+  function FillCircle_g(typ, x, y, radius, roughness, onlyInID) {
+    y_g = 0.5 - radius;
+    refIdx_g = radius * radius;
+    while(y_g > radius) {
+      x_g = Math.sqrt(_refIdx - (y_g * y_g));
+      randm((0 - roughness), roughness);
+      t2_g = Rand[0];
+      FillHorizontalLine(typ, round((x - x_g) + t2_g), round(y + y_g), round((x + x_g) + t2_g), onlyInID);
+      y_g ++;
+    }
+  }
+  
+  function AddDungeons() {
+    track;
+    
+  }
+}
